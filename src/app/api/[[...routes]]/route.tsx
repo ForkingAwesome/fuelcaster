@@ -28,13 +28,53 @@ app.frame("/", (c) => {
   });
 });
 
-app.frame("/address", (c) => {
+app.frame("/address", async (c) => {
   const { inputText } = c;
-  console.log(inputText);
+  let result = '';
+
+  if (!inputText) {
+    return c.res({
+      image: (
+        <div style={{ color: "white", display: "flex", fontSize: 60 }}>
+          Please enter your fuel Address!
+        </div>
+      ),
+      intents: [
+        <Button value="Address" action='/'>Go back</Button>,
+      ],
+    });
+  }
+
+  const postData = {
+    receiverAddress: inputText
+  };
+
+  await fetch('http://localhost:3000/api/check', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(postData)
+  })
+  .then(response => response.json())
+  .then(response => result = response.number)
+  // .then(() => console.log(result))
+  .catch(console.error);
+
   return c.res({
     image: (
       <div style={{ color: "white", display: "flex", fontSize: 60 }}>
-        Address: {inputText}
+        Address: {result}
+      </div>
+    ),
+  });
+});
+
+app.frame("/error", async (c) => {
+  return c.res({
+    image: (
+      <div style={{ color: "white", display: "flex", fontSize: 60 }}>
+        Please enter your Fuel Address
       </div>
     ),
   });

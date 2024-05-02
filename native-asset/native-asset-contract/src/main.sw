@@ -2,7 +2,8 @@ contract;
 
 mod errors;
 
-use errors::{MintError, SetError};
+use errors::{MintError};
+
 use src20::SRC20;
 use src3::SRC3;
 use asset::{
@@ -29,163 +30,168 @@ storage {
     total_assets: u64 = 0,
     /// The total number of coins minted for a particular asset.
     total_supply: StorageMap<AssetId, u64> = StorageMap {},
-    /// The name associated with a particular asset.
-    name: StorageMap<AssetId, StorageString> = StorageMap {},
-    /// The symbol associated with a particular asset.
-    symbol: StorageMap<AssetId, StorageString> = StorageMap {},
-    /// The decimals associated with a particular asset.
-    decimals: StorageMap<AssetId, u8> = StorageMap {},
+}
+
+configurable {
+    /// The total supply of coins for the asset minted by this contract.
+    TOTAL_SUPPLY: u64 = 100_000_000,
+    /// The decimals of the asset minted by this contract.
+    DECIMALS: u8 = 9u8,
+    /// The name of the asset minted by this contract.
+    NAME: str[7] = __to_str_array("Vadapav"),
+    /// The symbol of the asset minted by this contract.
+    SYMBOL: str[5] = __to_str_array("VDPAV"),
 }
 
 impl SRC20 for Contract {
-    /// Returns the total number of individual assets for a contract.
+    /// Returns the total number of individual assets minted by a contract.
+    ///
+    /// # Additional Information
+    ///
+    /// For this single asset contract, this is always one.
     ///
     /// # Returns
     ///
     /// * [u64] - The number of assets that this contract has minted.
     ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    ///
     /// # Examples
     ///
     /// ```sway
     /// use src20::SRC20;
     ///
-    /// fn foo(contract: ContractId) {
-    ///     let contract_abi = abi(SRC20, contract);
-    ///     let total_assets = contract_abi.total_assets().unwrap();
-    ///     assert(total_assets != 0);
+    /// fn foo(contract_id: ContractId) {
+    ///     let src_20_abi = abi(SRC20, contract_id);
+    ///     let assets = src_20_abi.total_assets();
+    ///     assert(assets == 1);
     /// }
     /// ```
     #[storage(read)]
     fn total_assets() -> u64 {
-        _total_assets(storage.total_assets)
+        1
     }
 
-    /// Returns the total supply of coins for an asset.
+    /// Returns the total supply of coins for the asset.
     ///
     /// # Arguments
     ///
-    /// * `asset`: [AssetId] - The asset of which to query the total supply.
+    /// * `asset`: [AssetId] - The asset of which to query the total supply, this should be the default `SubId`.
     ///
     /// # Returns
     ///
-    /// * [Option<u64>] - The total supply of coins for `asset`.
-    ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
+    /// * [Option<u64>] - The total supply of an `asset`.
     ///
     /// # Examples
     ///
     /// ```sway
     /// use src20::SRC20;
+    /// use std::constants::DEFAULT_SUB_ID;
     ///
-    /// fn foo(contract: ContractId, asset: AssetId) {
-    ///     let contract_abi = abi(SRC20, contract);
-    ///     let total_supply = contract_abi.total_supply(asset).unwrap();
-    ///     assert(total_supply == 1);
+    /// fn foo(contract_id: ContractId) {
+    ///     let src_20_abi = abi(SRC20, contract_id);
+    ///     let supply = src_20_abi.total_supply(DEFAULT_SUB_ID);
+    ///     assert(supply.unwrap() != 0);
     /// }
     /// ```
     #[storage(read)]
     fn total_supply(asset: AssetId) -> Option<u64> {
-        _total_supply(storage.total_supply, asset)
+        if asset == AssetId::default() {
+            Some(TOTAL_SUPPLY)
+        } else {
+            None
+        }
     }
 
-    /// Returns the name of the asset, such as “Ether”.
+    /// Returns the name of the asset.
     ///
     /// # Arguments
     ///
-    /// * `asset`: [AssetId] - The asset of which to query the name.
+    /// * `asset`: [AssetId] - The asset of which to query the name, this should be the default `SubId`.
     ///
     /// # Returns
     ///
     /// * [Option<String>] - The name of `asset`.
     ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    ///
     /// # Examples
     ///
     /// ```sway
     /// use src20::SRC20;
-    /// use std::string::String;
+    /// use std::constants::DEFAULT_SUB_ID;
     ///
-    /// fn foo(contract: ContractId, asset: AssetId) {
-    ///     let contract_abi = abi(SRC20, contract);
-    ///     let name = contract_abi.name(asset);
-    ///     assert(name.len() != 0);
+    /// fn foo(contract_id: ContractId) {
+    ///     let src_20_abi = abi(SRC20, contract_id);
+    ///     let name = src_20_abi.name(DEFAULT_SUB_ID);
+    ///     assert(name.is_some());
     /// }
     /// ```
     #[storage(read)]
     fn name(asset: AssetId) -> Option<String> {
-        _name(storage.name, asset)
+        if asset == AssetId::default() {
+            Some(String::from_ascii_str(from_str_array(NAME)))
+        } else {
+            None
+        }
     }
-    /// Returns the symbol of the asset, such as “ETH”.
+
+    /// Returns the symbol of the asset.
     ///
     /// # Arguments
     ///
-    /// * `asset`: [AssetId] - The asset of which to query the symbol.
+    /// * `asset`: [AssetId] - The asset of which to query the symbol, this should be the default `SubId`.
     ///
     /// # Returns
     ///
     /// * [Option<String>] - The symbol of `asset`.
     ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    ///
     /// # Examples
     ///
     /// ```sway
     /// use src20::SRC20;
-    /// use std::string::String;
+    /// use std::constants::DEFAULT_SUB_ID;
     ///
-    /// fn foo(contract: ContractId, asset: AssetId) {
-    ///     let contract_abi = abi(SRC20, contract);
-    ///     let symbol = contract_abi.symbol(asset).unwrap();
-    ///     assert(symbol.len() != 0);
+    /// fn foo(contract_id: ContractId) {
+    ///     let src_20_abi = abi(SRC20, contract_id);
+    ///     let symbol = src_20_abi.symbol(DEFAULT_SUB_ID);
+    ///     assert(symbol.is_some());
     /// }
     /// ```
     #[storage(read)]
     fn symbol(asset: AssetId) -> Option<String> {
-        _symbol(storage.symbol, asset)
+        if asset == AssetId::default() {
+            Some(String::from_ascii_str(from_str_array(SYMBOL)))
+        } else {
+            None
+        }
     }
+
     /// Returns the number of decimals the asset uses.
-    ///
-    /// # Additional Information
-    ///
-    /// e.g. 8, means to divide the coin amount by 100000000 to get its user interface representation.
     ///
     /// # Arguments
     ///
-    /// * `asset`: [AssetId] - The asset of which to query the decimals.
+    /// * `asset`: [AssetId] - The asset of which to query the decimals, this should be the default `SubId`.
     ///
     /// # Returns
     ///
     /// * [Option<u8>] - The decimal precision used by `asset`.
     ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    ///
     /// # Examples
     ///
     /// ```sway
     /// use src20::SRC20;
+    /// use std::constants::DEFAULT_SUB_ID;
     ///
-    /// fn foo(contract: ContractId, asset: AssedId) {
-    ///     let contract_abi = abi(SRC20, contract);
-    ///     let decimals = contract_abi.decimals(asset).unwrap();
-    ///     assert(decimals == 8u8);
+    /// fn foo(contract_id: ContractId) {
+    ///     let src_20_abi = abi(SRC20, contract_id);
+    ///     let decimals = src_20_abi.decimals(DEFAULT_SUB_ID);
+    ///     assert(decimals.unwrap() == 9u8);
     /// }
     /// ```
     #[storage(read)]
     fn decimals(asset: AssetId) -> Option<u8> {
-        _decimals(storage.decimals, asset)
+        if asset == AssetId::default() {
+            Some(DECIMALS)
+        } else {
+            None
+        }
     }
 }
 
@@ -273,264 +279,4 @@ impl SRC3 for Contract {
     fn burn(sub_id: SubId, amount: u64) {
         _burn(storage.total_supply, sub_id, amount);
     }
-}
-
-impl SetAssetAttributes for Contract {
-    /// Sets the name of an asset.
-    ///
-    /// # Arguments
-    ///
-    /// * `asset`: [AssetId] - The asset of which to set the name.
-    /// * `name`: [String] - The name of the asset.
-    ///
-    /// # Reverts
-    ///
-    /// * When the name has already been set for an asset.
-    ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    /// * Writes: `2`
-    ///
-    /// # Examples
-    ///
-    /// ```sway
-    /// use asset::SetAssetAttributes;
-    /// use src20::SRC20;
-    /// use std::string::String;
-    ///
-    /// fn foo(asset: AssetId) {
-    ///     let set_abi = abi(SetAssetAttributes, contract_id);
-    ///     let src_20_abi = abi(SRC20, contract_id);
-    ///     let name = String::from_ascii_str("Ether");
-    ///     set_abi.set_name(storage.name, asset, name);
-    ///     assert(src_20_abi.name(asset) == name);
-    /// }
-    /// ```
-    #[storage(write)]
-    fn set_name(asset: AssetId, name: String) {
-        require(
-            storage
-                .name
-                .get(asset)
-                .read_slice()
-                .is_none(),
-            SetError::ValueAlreadySet,
-        );
-        _set_name(storage.name, asset, name);
-    }
-    /// Sets the symbol of an asset.
-    ///
-    /// # Arguments
-    ///
-    /// * `asset`: [AssetId] - The asset of which to set the symbol.
-    /// * `symbol`: [String] - The symbol of the asset.
-    ///
-    /// # Reverts
-    ///
-    /// * When the symbol has already been set for an asset.
-    ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    /// * Writes: `2`
-    ///
-    /// # Examples
-    ///
-    /// ```sway
-    /// use asset::SetAssetAttributes;
-    /// use src20::SRC20;
-    /// use std::string::String;
-    ///
-    /// fn foo(asset: AssetId) {
-    ///     let set_abi = abi(SetAssetAttributes, contract_id);
-    ///     let src_20_abi = abi(SRC20, contract_id);
-    ///     let symbol = String::from_ascii_str("ETH");
-    ///     set_abi.set_symbol(storage.name, asset, symbol);
-    ///     assert(src_20_abi.symbol(asset) == symbol);
-    /// }
-    /// ```
-    #[storage(write)]
-    fn set_symbol(asset: AssetId, symbol: String) {
-        require(
-            storage
-                .symbol
-                .get(asset)
-                .read_slice()
-                .is_none(),
-            SetError::ValueAlreadySet,
-        );
-        _set_symbol(storage.symbol, asset, symbol);
-    }
-    /// Sets the decimals of an asset.
-    ///
-    /// # Arguments
-    ///
-    /// * `asset`: [AssetId] - The asset of which to set the decimals.
-    /// * `decimal`: [u8] - The decimals of the asset.
-    ///
-    /// # Reverts
-    ///
-    /// * When the decimals has already been set for an asset.
-    ///
-    /// # Number of Storage Accesses
-    ///
-    /// * Reads: `1`
-    /// * Writes: `1`
-    ///
-    /// # Examples
-    ///
-    /// ```sway
-    /// use asset::SetAssetAttributes;
-    /// use src20::SRC20;
-    ///
-    /// fn foo(asset: AssetId) {
-    ///     let decimals = 8u8;
-    ///     let set_abi = abi(SetAssetAttributes, contract_id);
-    ///     let src_20_abi = abi(SRC20, contract_id);
-    ///     set_abi.set_decimals(asset, decimals);
-    ///     assert(src_20_abi.decimals(asset) == decimals);
-    /// }
-    /// ```
-    #[storage(write)]
-    fn set_decimals(asset: AssetId, decimals: u8) {
-        require(
-            storage
-                .decimals
-                .get(asset)
-                .try_read()
-                .is_none(),
-            SetError::ValueAlreadySet,
-        );
-        _set_decimals(storage.decimals, asset, decimals);
-    }
-}
-
-#[test]
-fn test_mint() {
-    use std::context::balance_of;
-    use std::constants::ZERO_B256;
-    let src3_abi = abi(SRC3, CONTRACT_ID);
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 0);
-    src3_abi.mint(recipient, sub_id, 100);
-    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 100);
-}
-#[test(should_revert)]
-fn test_revert_mint_amount_greater_than_max() {
-    use std::constants::ZERO_B256;
-    let src3_abi = abi(SRC3, CONTRACT_ID);
-    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
-    let sub_id = ZERO_B256;
-    let amount = 100_000_001;
-    src3_abi.mint(recipient, sub_id, amount);
-}
-#[test]
-fn test_burn() {
-    use std::context::balance_of;
-    use std::constants::ZERO_B256;
-    let src3_abi = abi(SRC3, CONTRACT_ID);
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    src3_abi.mint(recipient, sub_id, 100);
-    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 100);
-    src3_abi.burn(sub_id, 100);
-    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 0);
-}
-#[test]
-fn test_total_assets() {
-    let src3_abi = abi(SRC3, CONTRACT_ID);
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
-    let sub_id1 = 0x0000000000000000000000000000000000000000000000000000000000000001;
-    let sub_id2 = 0x0000000000000000000000000000000000000000000000000000000000000002;
-    assert(src20_abi.total_assets() == 0);
-    src3_abi.mint(recipient, sub_id1, 100);
-    assert(src20_abi.total_assets() == 1);
-    src3_abi.mint(recipient, sub_id2, 100);
-    assert(src20_abi.total_assets() == 2);
-}
-#[test]
-fn test_total_supply() {
-    use std::constants::ZERO_B256;
-    let src3_abi = abi(SRC3, CONTRACT_ID);
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    assert(src20_abi.total_supply(asset_id).is_none());
-    src3_abi.mint(recipient, sub_id, 100);
-    assert(src20_abi.total_supply(asset_id).unwrap() == 100);
-}
-#[test]
-fn test_name() {
-    use std::constants::ZERO_B256;
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let attributes_abi = abi(SetAssetAttributes, CONTRACT_ID);
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    let name = String::from_ascii_str("Fuel Asset");
-    assert(src20_abi.name(asset_id).is_none());
-    attributes_abi.set_name(asset_id, name);
-    assert(src20_abi.name(asset_id).unwrap().as_bytes() == name.as_bytes());
-}
-#[test(should_revert)]
-fn test_revert_set_name_twice() {
-    use std::constants::ZERO_B256;
-    let attributes_abi = abi(SetAssetAttributes, CONTRACT_ID);
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    let name = String::from_ascii_str("Fuel Asset");
-    attributes_abi.set_name(asset_id, name);
-    attributes_abi.set_name(asset_id, name);
-}
-#[test]
-fn test_symbol() {
-    use std::constants::ZERO_B256;
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let attributes_abi = abi(SetAssetAttributes, CONTRACT_ID);
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    let symbol = String::from_ascii_str("FUEL");
-    assert(src20_abi.symbol(asset_id).is_none());
-    attributes_abi.set_symbol(asset_id, symbol);
-    assert(src20_abi.symbol(asset_id).unwrap().as_bytes() == symbol.as_bytes());
-}
-#[test(should_revert)]
-fn test_revert_set_symbol_twice() {
-    use std::constants::ZERO_B256;
-    let attributes_abi = abi(SetAssetAttributes, CONTRACT_ID);
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    let symbol = String::from_ascii_str("FUEL");
-    attributes_abi.set_symbol(asset_id, symbol);
-    attributes_abi.set_symbol(asset_id, symbol);
-}
-#[test]
-fn test_decimals() {
-    use std::constants::ZERO_B256;
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let attributes_abi = abi(SetAssetAttributes, CONTRACT_ID);
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    let decimals = 8u8;
-    assert(src20_abi.decimals(asset_id).is_none());
-    attributes_abi.set_decimals(asset_id, decimals);
-    assert(src20_abi.decimals(asset_id).unwrap() == decimals);
-}
-#[test(should_revert)]
-fn test_revert_set_decimals_twice() {
-    use std::constants::ZERO_B256;
-    let src20_abi = abi(SRC20, CONTRACT_ID);
-    let attributes_abi = abi(SetAssetAttributes, CONTRACT_ID);
-    let sub_id = ZERO_B256;
-    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
-    let decimals = 8u8;
-    attributes_abi.set_decimals(asset_id, decimals);
-    attributes_abi.set_decimals(asset_id, decimals);
 }

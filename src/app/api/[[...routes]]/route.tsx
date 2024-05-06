@@ -57,7 +57,7 @@ app.frame("/address", async (c) => {
     body: JSON.stringify(postData)
   })
   .then(response => response.json())
-  .then(response => result = response.number)
+  .then(response => result = response.result)
   // .then(() => console.log(result))
   .catch(console.error);
 

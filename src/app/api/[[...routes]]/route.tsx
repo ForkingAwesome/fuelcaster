@@ -30,7 +30,6 @@ app.frame("/", (c) => {
           borderRadius: "10px",
         }}
       >
-        
         <div style={{ marginBottom: "20px" }}>Welcome to FuelCaster! 👋</div>
         <div>Mint your Tokens Here! 💰</div>
       </div>
@@ -76,7 +75,23 @@ app.frame("/address", async (c) => {
 
   return c.res({
     image: (
-      <div style={{ color: "white", display: "flex", fontSize: 60 }}>
+      <div
+        style={{
+          color: "#101112",
+          display: "flex",
+          flexDirection: "column",
+          fontSize: "3rem",
+          backgroundImage: "linear-gradient(120deg, #00c9ff, #92fe9d)",
+          height: "100vh",
+          padding: "20px",
+          textAlign: "center",
+          justifyContent: "center",
+          alignItems: "center",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "10px",
+        }}
+      >
+        {" "}
         Address: {result}
       </div>
     ),
@@ -86,7 +101,23 @@ app.frame("/address", async (c) => {
 app.frame("/error", async (c) => {
   return c.res({
     image: (
-      <div style={{ color: "white", display: "flex", fontSize: 60 }}>
+      <div
+        style={{
+          color: "#101112",
+          display: "flex",
+          flexDirection: "column",
+          fontSize: "3rem",
+          backgroundImage: "linear-gradient(120deg, #00c9ff, #92fe9d)",
+          height: "100vh",
+          padding: "20px",
+          textAlign: "center",
+          justifyContent: "center",
+          alignItems: "center",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "10px",
+        }}
+      >
+        {" "}
         Please enter your Fuel Address
       </div>
     ),

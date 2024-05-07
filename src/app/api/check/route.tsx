@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const contract = new Contract(contractId, abi, wallet);
         const identityInput = { Address: { value: receiverAddress.toB256() } };
         console.log("B256: ", identityInput);
-        const value = await contract.functions.mint(identityInput, 0x0000000000000000000000000000000000000000000000000000000000000000, 100).call();
+        const value = await contract.functions.mint(identityInput, '0x0000000000000000000000000000000000000000000000000000000000000000', 100).call();
         console.log(value);
         return NextResponse.json({ result: receiverAddress });
     } catch (error) {

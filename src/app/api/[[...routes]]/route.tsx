@@ -37,6 +37,8 @@ app.frame("/", (c) => {
     intents: [
       <TextInput placeholder="Enter Your Fuel Address Here"></TextInput>,
       <Button value="Address">Mint 🌱</Button>,
+      <TextInput placeholder="Enter Your Fuel Address Here"></TextInput>,
+      <Button value="Address">Mint 🌱</Button>,
     ],
   });
 });

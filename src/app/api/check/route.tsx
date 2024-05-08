@@ -16,8 +16,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const identityInput = { Address: { value: receiverAddress.toB256() } };
         console.log("B256: ", identityInput);
         const value = await contract.functions.mint(identityInput, '0x0000000000000000000000000000000000000000000000000000000000000000', 100).call();
-        console.log(value);
-        return NextResponse.json({ result: receiverAddress });
+        return NextResponse.json({ result: "Token Successfully Minted!", transactionId: value.transactionId });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ result: "There was an Error" });
